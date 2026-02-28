@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "darp4-share-core"
+version = "0.1.0"
+description = "Logica de negocio compartida entre servicios Darp4"
+authors = [
+    { name = "Darp4" }
+]
+requires-python = ">=3.10"
+dependencies = [
+    "pydantic>=2.0",
+    "sqlmodel>=0.0.14",
+    "fastapi>=0.100.0",
+    "sqlalchemy[asyncio]>=2.0.0",
+    "asyncpg>=0.28.0",
+    "redis>=5.0.0",
+    "python-dotenv>=1.0.0",
+    "google-cloud-storage>=2.0.0",
+    "google-auth>=2.0.0",
+]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
