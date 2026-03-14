@@ -3,7 +3,7 @@ requires = ["setuptools>=68.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "darp4-share-core"
+name = "d4sharedcore"
 version = "0.1.0"
 description = "Logica de negocio compartida entre servicios Darp4"
 authors = [
