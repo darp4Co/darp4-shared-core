@@ -1,0 +1,23 @@
+steps:
+  - name: python:3.11
+    id: Build package
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        pip install build
+        python -m build
+
+  - name: python:3.11
+    id: Upload package
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        pip install twine keyrings.google-artifactregistry-auth
+        twine upload \
+        --repository-url https://us-central1-python.pkg.dev/darp4-dev/darp4-python-packages/ \
+        dist/*
+
+options:
+  logging: CLOUD_LOGGING_ONLY
