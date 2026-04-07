@@ -16,10 +16,10 @@ if not all([DB_USER, DB_PASSWORD, DB_NAME, DB_HOST, INSTANCE_CONNECTION_NAME]):
     raise RuntimeError("Faltan variables de entorno para la DB")
 
 DB_SOCKET_DIR = "/cloudsql"
-DB_HOST = f"{DB_SOCKET_DIR}/{INSTANCE_CONNECTION_NAME}"
 ENVIRONMENT = os.getenv("ENVIRONMENT", "local")  # local | cloud
 
 if ENVIRONMENT == "cloud":
+    DB_HOST = f"{DB_SOCKET_DIR}/{INSTANCE_CONNECTION_NAME}"
     DATABASE_URL = (
         f"postgresql+asyncpg://{DB_USER}:{DB_PASSWORD}@/"
         f"{DB_NAME}?host=/cloudsql/{INSTANCE_CONNECTION_NAME}"
