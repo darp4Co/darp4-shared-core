@@ -5,8 +5,8 @@ import os
 
 ENVIRONMENT = os.getenv("ENVIRONMENT", "local")
 
-BUCKET_NAME = os.getenv("BUCKET_NAME", "darp4-storage")
-TARGET_SA = os.getenv("TARGET_SA", "979750909530-compute@developer.gserviceaccount.com")
+BUCKET_NAME = os.getenv("BUCKET_NAME")
+TARGET_SA = os.getenv("TARGET_SA")
 
 
 async def generate_signed_url(path: str, method: str = "GET", expiration: int = 60, content_type: str | None = None) -> str:
