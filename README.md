@@ -9,7 +9,7 @@ Librería de código compartido para los servicios de la plataforma **Darp4**. C
 ## Instalación
 
 ```bash
-pip install git+https://<TOKEN>@github.com/darp4Co/darp4-shared-core.git
+pip install git+https://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@github.com/darp4Co/darp4-shared-core.git@main
 ```
 
 O como dependencia editable para desarrollo:

@@ -9,16 +9,17 @@ load_dotenv()
 DB_USER = os.getenv("DB_USER")
 DB_PASSWORD = os.getenv("DB_PASSWORD")
 DB_NAME = os.getenv("DB_NAME")
+DB_HOST = os.getenv("DB_HOST")
 INSTANCE_CONNECTION_NAME = os.getenv("INSTANCE_CONNECTION_NAME")
 
-if not all([DB_USER, DB_PASSWORD, DB_NAME, INSTANCE_CONNECTION_NAME]):
+if not all([DB_USER, DB_PASSWORD, DB_NAME, DB_HOST, INSTANCE_CONNECTION_NAME]):
     raise RuntimeError("Faltan variables de entorno para la DB")
 
 DB_SOCKET_DIR = "/cloudsql"
-DB_HOST = f"{DB_SOCKET_DIR}/{INSTANCE_CONNECTION_NAME}"
 ENVIRONMENT = os.getenv("ENVIRONMENT", "local")  # local | cloud
 
 if ENVIRONMENT == "cloud":
+    DB_HOST = f"{DB_SOCKET_DIR}/{INSTANCE_CONNECTION_NAME}"
     DATABASE_URL = (
         f"postgresql+asyncpg://{DB_USER}:{DB_PASSWORD}@/"
         f"{DB_NAME}?host=/cloudsql/{INSTANCE_CONNECTION_NAME}"
@@ -26,7 +27,7 @@ if ENVIRONMENT == "cloud":
 else:
     DATABASE_URL = (
         f"postgresql+asyncpg://{DB_USER}:{DB_PASSWORD}@"
-        f"127.0.0.1:5432/{DB_NAME}"
+        f"{DB_HOST}:5432/{DB_NAME}"
     )
 
 _engine: AsyncEngine | None = None
