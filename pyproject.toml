@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "d4sharedcore"
-version = "0.1.0"
+version = "1.0.0"
 description = "Logica de negocio compartida entre servicios Darp4"
 authors = [
     { name = "Darp4" }

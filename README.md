@@ -9,7 +9,7 @@ Librería de código compartido para los servicios de la plataforma **Darp4**. C
 ## Instalación
 
 ```bash
-pip install git+https://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@github.com/darp4Co/darp4-shared-core.git@main
+pip install git+https://github.com/darp4Co/darp4-shared-core.git
 ```
 
 O como dependencia editable para desarrollo:
@@ -129,7 +129,7 @@ async def get_items(session: AsyncSession = Depends(get_session)):
 | Variable                   | Descripción                     | Ejemplo                   |
 | -------------------------- | ------------------------------- | ------------------------- |
 | `DB_USER`                  | Usuario PostgreSQL              | `postgres`                |
-| `DB_PASSWORD`              | Contraseña                      | `**`**                    |
+| `DB_PASSWORD`              | Contraseña                      | `*`***                    |
 | `DB_NAME`                  | Nombre de la base de datos      | `darp4_db`                |
 | `INSTANCE_CONNECTION_NAME` | Conexión Cloud SQL (producción) | `project:region:instance` |
 | `ENVIRONMENT`              | `local` o `cloud`               | `local`                   |
@@ -195,12 +195,12 @@ url = await generate_signed_url(
 **Parámetros:**
 
 
-| Parámetro      | Tipo         | Default | Descripción                          |
-| -------------- | ------------ | ------- | ------------------------------------ |
-| `path`         | `str`        | —       | Ruta del objeto en el bucket         |
-| `method`       | `str`        | `"GET"` | Método HTTP (GET, POST, PUT, DELETE) |
-| `expiration`   | `int`        | `60`    | Duración del URL en minutos          |
-| `content_type` | `str | None` | `None`  | Tipo MIME (opcional)                 |
+| Parámetro      | Tipo  | Default | Descripción                          |
+| -------------- | ----- | ------- | ------------------------------------ |
+| `path`         | `str` | —       | Ruta del objeto en el bucket         |
+| `method`       | `str` | `"GET"` | Método HTTP (GET, POST, PUT, DELETE) |
+| `expiration`   | `int` | `60`    | Duración del URL en minutos          |
+| `content_type` | `str  | None`   | `None`                               |
 
 
 **Variables de entorno:**
@@ -280,13 +280,13 @@ Incluye `List-Unsubscribe` y versión en texto plano.
 ## Variables de Entorno Resumidas
 
 
-| Variable                                                        | Módulo              | Obligatoria              |
-| --------------------------------------------------------------- | ------------------- | ------------------------ |
+| Variable                                                        | Módulo                 | Obligatoria              |
+| --------------------------------------------------------------- | ---------------------- | ------------------------ |
 | `DB_USER`, `DB_PASSWORD`, `DB_NAME`, `INSTANCE_CONNECTION_NAME` | database_darp4.session | Sí                       |
 | `REDIS_HOST`, `REDIS_PORT`, `REDIS_DB`, `REDIS_PREFIX`          | database_darp4.redis   | No (hay defaults)        |
-| `ENVIRONMENT`                                                   | session, signed_url | No (`local`)             |
-| `BUCKET_NAME`, `TARGET_SA`                                      | signed_url          | No (hay defaults)        |
-| `SMTP_SERVER`, `SMTP_PORT`, `EMAIL_USER`, `EMAIL_PASS`          | send_email          | Sí (para enviar correos) |
+| `ENVIRONMENT`                                                   | session, signed_url    | No (`local`)             |
+| `BUCKET_NAME`, `TARGET_SA`                                      | signed_url             | No (hay defaults)        |
+| `SMTP_SERVER`, `SMTP_PORT`, `EMAIL_USER`, `EMAIL_PASS`          | send_email             | Sí (para enviar correos) |
 
 
 Usa un archivo `.env` en la raíz del proyecto y `python-dotenv` para cargarlas.
@@ -297,17 +297,19 @@ Usa un archivo `.env` en la raíz del proyecto y `python-dotenv` para cargarlas.
 
 Todas las dependencias están declaradas en `pyproject.toml` y se instalan automáticamente con el paquete:
 
-| Paquete | Versión | Módulo(s) |
-|---------|---------|-----------|
-| `pydantic` | >=2.0 | schemas_darp4 (vía sqlmodel) |
-| `sqlmodel` | >=0.0.14 | schemas_darp4 |
-| `fastapi` | >=0.100.0 | logging_darp4 |
-| `sqlalchemy` | >=2.0.0 (extras: asyncio) | database_darp4.session |
-| `asyncpg` | >=0.28.0 | database_darp4.session |
-| `redis` | >=5.0.0 | database_darp4.redis |
-| `python-dotenv` | >=1.0.0 | database_darp4.session, email_darp4 |
-| `google-cloud-storage` | >=2.0.0 | gcp_darp4.google_storage |
-| `google-auth` | >=2.0.0 | gcp_darp4.google_storage |
+
+| Paquete                | Versión                   | Módulo(s)                           |
+| ---------------------- | ------------------------- | ----------------------------------- |
+| `pydantic`             | >=2.0                     | schemas_darp4 (vía sqlmodel)        |
+| `sqlmodel`             | >=0.0.14                  | schemas_darp4                       |
+| `fastapi`              | >=0.100.0                 | logging_darp4                       |
+| `sqlalchemy`           | >=2.0.0 (extras: asyncio) | database_darp4.session              |
+| `asyncpg`              | >=0.28.0                  | database_darp4.session              |
+| `redis`                | >=5.0.0                   | database_darp4.redis                |
+| `python-dotenv`        | >=1.0.0                   | database_darp4.session, email_darp4 |
+| `google-cloud-storage` | >=2.0.0                   | gcp_darp4.google_storage            |
+| `google-auth`          | >=2.0.0                   | gcp_darp4.google_storage            |
+
 
 ---
 
