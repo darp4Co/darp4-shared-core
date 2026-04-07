@@ -51,6 +51,8 @@ def get_engine() -> AsyncEngine:
     """
     global _engine
 
+    print(DATABASE_URL)  # Debug: Imprime la URL de la base de datos para verificar su formato
+
     if _engine is None:
         _engine = create_async_engine(
             DATABASE_URL,
