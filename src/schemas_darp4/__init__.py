@@ -1,5 +1,5 @@
-from session import SessionSchema
-from api_response import (
+from schemas_darp4.session import SessionSchema
+from schemas_darp4.api_response import (
     ApiResponse,
     ErrorSchema
 )
