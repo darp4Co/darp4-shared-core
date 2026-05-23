@@ -38,7 +38,7 @@ class TokenValidator:
                 
                 token_validator: TokenValidator = request.app.state.token_validator # Obtiene el validador de tokens del estado de la aplicación
                 
-                return await token_validator.validate(token=token) # Valida el token JWT y retorna los datos de la sesión si es válido
+                return await token_validator.validate(token=token, algorithms=["RS256"]) # Valida el token JWT y retorna los datos de la sesión si es válido
     """
 
     __slots__ = ("jwks_client", "issuer", "audience")
@@ -56,7 +56,7 @@ class TokenValidator:
         self.issuer: str = issuer
         self.audience: str = audience
     
-    async def validate(self, token:str) -> SessionSchema:
+    async def validate(self, token:str, algorithms: list[str] = ["RS256"]) -> SessionSchema:
         """
         Valida un token JWT utilizando la clave obtenida del JWKS y decodifica su payload.
             - token: Token JWT a validar.
@@ -70,7 +70,7 @@ class TokenValidator:
             payload: dict[str, Any] = decode(
                 jwt=token,
                 key=signing_key,
-                algorithms=["RS256"],
+                algorithms=algorithms,
                 audience=self.audience,
                 issuer=self.issuer
             )
