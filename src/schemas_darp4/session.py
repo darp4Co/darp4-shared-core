@@ -3,18 +3,33 @@ from datetime import datetime
 
 class SessionSchema(BaseModel):
     """Esquema de datos que representa la información contenida en el payload de un token JWT después de ser validado.
-    - sub: Identificador del sujeto (usuario) al que pertenece el token.
-    - iat: Fecha y hora de emisión del token.
-    - exp: Fecha y hora de expiración del token.
-    - iss: Emisor del token.
-    - aud: Audiencia del token.
-    - tenant: Identificador del tenant al que pertenece el usuario.
-    - campus: Identificador del campus al que pertenece el usuario.
+        sub: Identificador del sujeto (usuario) al que pertenece el token.
+        tid: Tenant id
+        tcd: Tenant code
+        sid: Session id
+        iat: Fecha y hora de emisión del token.
+        exp: Fecha y hora de expiración del token.
+        iss: Emisor del token.
+        jti: Token id
+        role: Información del rol del usuario.
+        campus: Información del campus del usuario.
     """
     sub: str
+    tid: str
+    tcd: str
+    sid: str
+    iss: str
     iat: datetime
     exp: datetime
-    iss: str
-    aud: str
-    tenant: str
-    campus: str
+    jti: str
+    role: RoleSessionSchema
+    campus: CampusSessionSchema
+
+class CampusSessionSchema(BaseModel):
+    id: int
+    name: str
+
+class RoleSessionSchema(BaseModel):
+    id: int
+    name: str
+    
