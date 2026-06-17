@@ -69,7 +69,7 @@ class TokenValidator:
 
             payload: dict[str, Any] = decode(
                 jwt=token,
-                key=signing_key,
+                key=signing_key.key,
                 algorithms=algorithms,
                 audience=self.audience,
                 issuer=self.issuer

@@ -10,6 +10,7 @@ class SessionSchema(BaseModel):
         iat: Fecha y hora de emisión del token.
         exp: Fecha y hora de expiración del token.
         iss: Emisor del token.
+        aud: Audience del token.
         jti: Token id
         role: Información del rol del usuario.
         campus: Información del campus del usuario.
@@ -19,6 +20,7 @@ class SessionSchema(BaseModel):
     tcd: str
     sid: str
     iss: str
+    aud: str
     iat: datetime
     exp: datetime
     jti: str
