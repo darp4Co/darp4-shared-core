@@ -13,7 +13,6 @@ class SessionSchema(BaseModel):
         aud: Audience del token.
         jti: Token id
         role: Información del rol del usuario.
-        campus: Información del campus del usuario.
     """
     sub: str
     tid: str
@@ -25,11 +24,7 @@ class SessionSchema(BaseModel):
     exp: datetime
     jti: str
     role: RoleSessionSchema
-    campus: CampusSessionSchema
 
-class CampusSessionSchema(BaseModel):
-    id: int
-    name: str
 
 class RoleSessionSchema(BaseModel):
     id: int
