@@ -72,7 +72,13 @@ class TokenValidator:
                 key=signing_key.key,
                 algorithms=algorithms,
                 audience=self.audience,
-                issuer=self.issuer
+                issuer=self.issuer,
+                options={
+                    "require": ["sub", "tid", "tcd", "sid", "exp", "iss", "aud"],
+                    "verify_exp": True,
+                    "verify_iss": True,
+                    "verify_aud": True
+                }
             )
 
             return SessionSchema(**payload)
