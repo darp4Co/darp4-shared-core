@@ -1,6 +1,11 @@
-from jwt import (
-    PyJWKClient,
-    decode
+import asyncio
+from jwt import PyJWKClient, decode
+from jwt.exceptions import (
+    ExpiredSignatureError,
+    InvalidAudienceError,
+    InvalidIssuerError,
+    DecodeError,
+    PyJWKClientError
 )
 from logging import getLogger
 from traceback import format_exc
@@ -10,7 +15,6 @@ from schemas_darp4 import SessionSchema
 logger = getLogger("uvicorn.error")
 
 class TokenValidator:
-    
     """
     Clase encargada de obtener el Json Web Key Set (JWKS) y validar los tokens JWT utilizando la biblioteca PyJWT.
      - jwks_url: URL del JWKS para obtener las claves públicas.
@@ -51,21 +55,25 @@ class TokenValidator:
     ):
         self.jwks_client: PyJWKClient = PyJWKClient(
             uri=jwks_url,
-            cache_keys=True
+            cache_keys=True,
+            cache_jwk_set=True,
+            lifespan=300
         )
         self.issuer: str = issuer
         self.audience: str = audience
-    
-    async def validate(self, token:str, algorithms: list[str] = ["RS256"]) -> SessionSchema:
+
+    async def validate(self, token: str, algorithms: list[str] | None = None) -> SessionSchema:
         """
         Valida un token JWT utilizando la clave obtenida del JWKS y decodifica su payload.
             - token: Token JWT a validar.
             Retorna un objeto SessionSchema con los datos del payload si la validación es exitosa.
-            lanza una excepción si la validación falla o si ocurre algún error durante el proceso.
+            Lanza una excepción si la validación falla o si ocurre algún error durante el proceso.
         """
+        algorithms = algorithms or ["RS256"]
         try:
-
-            signing_key = self.jwks_client.get_signing_key_from_jwt(token=token)
+            signing_key = await asyncio.get_event_loop().run_in_executor(
+                None, self.jwks_client.get_signing_key_from_jwt, token
+            )
 
             payload: dict[str, Any] = decode(
                 jwt=token,
@@ -77,12 +85,23 @@ class TokenValidator:
                     "require": ["sub", "tid", "tcd", "sid", "exp", "iss", "aud"],
                     "verify_exp": True,
                     "verify_iss": True,
-                    "verify_aud": True
-                }
+                    "verify_aud": True,
+                },
             )
-
             return SessionSchema(**payload)
-        
+
+        except ExpiredSignatureError:
+            logger.warning("Token expirado")
+            raise
+        except InvalidAudienceError:
+            logger.warning("Audience inválida")
+            raise
+        except InvalidIssuerError:
+            logger.warning("Issuer inválido")
+            raise
+        except (DecodeError, PyJWKClientError) as e:
+            logger.error(f"Token malformado o JWKS inalcanzable: {e}")
+            raise
         except Exception as e:
-            logger.error(f"error al validar JWT token e: {e}, traceback: {format_exc()}")
+            logger.error(f"Error inesperado validando token: {e}\n{format_exc()}")
             raise
