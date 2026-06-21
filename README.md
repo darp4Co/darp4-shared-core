@@ -1,6 +1,6 @@
 # Darp4 Shared Core
 
-Librería de código compartido para los servicios de la plataforma **Darp4**. Contiene esquemas de respuesta API, utilidades de base de datos (PostgreSQL, Redis), envío de correos, logging, y generación de URLs firmadas para Google Cloud Storage.
+Librería de código compartido para los servicios de la plataforma **Darp4**. Contiene esquemas de respuesta API, utilidades de base de datos (PostgreSQL, Redis), envío de correos, logging, generación de URLs firmadas para Google Cloud Storage, encolado de tareas con Google Cloud Tasks, y funciones de notificación asíncronas.
 
 ## Requisitos
 
@@ -28,7 +28,9 @@ darp4-shared-core/
 │   ├── schemas_darp4/     # Esquemas de respuesta API estandarizados
 │   ├── logging_darp4/     # Middleware de logging para FastAPI
 │   ├── gcp_darp4/         # Integración con Google Cloud Platform
-│   │   └── google_storage/# URLs firmadas para GCS
+│   │   ├── google_storage/# URLs firmadas para GCS
+│   │   └── cloud_tasks/   # Encolado de tareas HTTP con Cloud Tasks
+│   ├── notifications_darp4/ # Notificaciones vía Cloud Tasks queue
 │   ├── email_darp4/       # Envío de correos y templates HTML
 │   └── database_darp4/    # Conexión a PostgreSQL y Redis
 └── test/
@@ -217,6 +219,159 @@ url = await generate_signed_url(
 
 ---
 
+### `gcp_darp4.cloud_tasks` — Encolado de tareas HTTP
+
+Cliente genérico para encolar tareas HTTP en Google Cloud Tasks con autenticación OIDC.
+
+**Importar:**
+
+```python
+from gcp_darp4.cloud_tasks import enqueue_task
+```
+
+**Ejemplo:**
+
+```python
+from datetime import datetime, timedelta, timezone
+
+# Encolar un task HTTP inmediato
+task_name = enqueue_task(
+    queue_name="notification-queue",
+    url="https://mi-servicio.run.app/api/procesar",
+    payload={"order_id": "ord-123"},
+)
+
+# Encolar con ejecución diferida (30 minutos)
+task_name = enqueue_task(
+    queue_name="notification-queue",
+    url="https://mi-servicio.run.app/api/recordatorio",
+    payload={"user_id": "usr-456"},
+    schedule_time=datetime.now(timezone.utc) + timedelta(minutes=30),
+)
+```
+
+**Parámetros:**
+
+
+| Parámetro       | Tipo             | Default  | Descripción                              |
+| --------------- | ---------------- | -------- | ---------------------------------------- |
+| `queue_name`    | `str`            | —        | Nombre de la cola de Cloud Tasks         |
+| `url`           | `str`            | —        | URL completa del endpoint HTTP a invocar |
+| `payload`       | `dict`           | —        | Cuerpo del request (serializado a JSON)  |
+| `http_method`   | `str`            | `"POST"` | Método HTTP                              |
+| `schedule_time` | `datetime | None`| `None`   | Ejecución diferida (opcional)            |
+
+
+**Variables de entorno:**
+
+
+| Variable                    | Descripción                        | Default        |
+| --------------------------- | ---------------------------------- | -------------- |
+| `GCP_PROJECT_ID`            | ID del proyecto de Google Cloud    | `darp4-dev`    |
+| `GCP_LOCATION`              | Región de la cola                  | `us-central1`  |
+| `GCP_SERVICE_ACCOUNT_EMAIL` | Service account para token OIDC    | —              |
+| `ENVIRONMENT`               | `local` o `cloud`                  | `local`        |
+
+
+> En `local`, se ejecuta la llamada HTTP directamente con `httpx` en lugar de encolar en Cloud Tasks (no hay emulador disponible).
+
+---
+
+### `notifications_darp4` — Notificaciones vía Cloud Tasks
+
+Funciones de alto nivel para encolar notificaciones. Cada función crea un task HTTP que invoca el endpoint correspondiente de la API de notificaciones.
+
+**Importar:**
+
+```python
+from notifications_darp4 import (
+    enqueue_notification_to_user,
+    enqueue_notification_bulk,
+    enqueue_notification_by_tenant,
+    enqueue_notification_by_role,
+)
+```
+
+**Funciones disponibles:**
+
+
+| Función                            | Endpoint Target                                         | Descripción                                  |
+| ---------------------------------- | ------------------------------------------------------- | -------------------------------------------- |
+| `enqueue_notification_to_user()`   | `POST /notifications/send/{user_id}`                    | Notificación a un usuario específico         |
+| `enqueue_notification_bulk()`      | `POST /notifications/send_bulk`                         | Notificación masiva a lista de usuarios      |
+| `enqueue_notification_by_tenant()` | `POST /notifications/send_by_tenant/{tenant_id}`        | Notificación a todos los usuarios de un tenant |
+| `enqueue_notification_by_role()`   | `POST /notifications/send_by_role/{tenant_id}/role/{role_name}` | Notificación por rol dentro de un tenant |
+
+
+**Ejemplos:**
+
+```python
+# Notificación a un usuario
+enqueue_notification_to_user(
+    user_id="abc-123",
+    title="Nueva orden",
+    body="Tienes una nueva orden asignada",
+    notif_type="order",
+    data={"order_id": "ord-456"},
+)
+
+# Notificación masiva
+enqueue_notification_bulk(
+    user_ids=["user-1", "user-2", "user-3"],
+    title="Mantenimiento programado",
+    body="El sistema estará en mantenimiento mañana",
+)
+
+# Notificación a todo un tenant
+enqueue_notification_by_tenant(
+    tenant_id="tenant-abc",
+    title="Actualización disponible",
+    body="Hay una nueva versión de la app",
+)
+
+# Notificación por rol
+enqueue_notification_by_role(
+    tenant_id="tenant-abc",
+    role_name="driver",
+    title="Ruta actualizada",
+    body="Tu ruta de hoy ha sido modificada",
+    data={"route_id": "route-789"},
+)
+
+# Con ejecución diferida
+from datetime import datetime, timedelta, timezone
+
+enqueue_notification_to_user(
+    user_id="abc-123",
+    title="Recordatorio",
+    body="Tu turno comienza en 30 minutos",
+    schedule_time=datetime.now(timezone.utc) + timedelta(minutes=30),
+)
+```
+
+**Parámetros comunes:**
+
+
+| Parámetro       | Tipo             | Default  | Descripción                           |
+| --------------- | ---------------- | -------- | ------------------------------------- |
+| `title`         | `str`            | —        | Título de la notificación             |
+| `body`          | `str`            | —        | Cuerpo de la notificación             |
+| `notif_type`    | `str`            | `"info"` | Tipo de notificación                  |
+| `data`          | `dict | None`    | `None`   | Datos adicionales                     |
+| `schedule_time` | `datetime | None`| `None`   | Ejecución diferida (opcional)         |
+
+
+**Variables de entorno:**
+
+
+| Variable                   | Descripción                           | Default              |
+| -------------------------- | ------------------------------------- | -------------------- |
+| `NOTIFICATION_SERVICE_URL` | URL base del servicio de notificaciones | —                  |
+| `NOTIFICATION_QUEUE_NAME`  | Nombre de la cola de Cloud Tasks      | `notification-queue` |
+
+
+---
+
 ### `email_darp4` — Correos electrónicos
 
 #### Template HTML
@@ -280,13 +435,15 @@ Incluye `List-Unsubscribe` y versión en texto plano.
 ## Variables de Entorno Resumidas
 
 
-| Variable                                                        | Módulo                 | Obligatoria              |
-| --------------------------------------------------------------- | ---------------------- | ------------------------ |
-| `DB_USER`, `DB_PASSWORD`, `DB_NAME`, `INSTANCE_CONNECTION_NAME` | database_darp4.session | Sí                       |
-| `REDIS_HOST`, `REDIS_PORT`, `REDIS_DB`, `REDIS_PREFIX`          | database_darp4.redis   | No (hay defaults)        |
-| `ENVIRONMENT`                                                   | session, signed_url    | No (`local`)             |
-| `BUCKET_NAME`, `TARGET_SA`                                      | signed_url             | No (hay defaults)        |
-| `SMTP_SERVER`, `SMTP_PORT`, `EMAIL_USER`, `EMAIL_PASS`          | send_email             | Sí (para enviar correos) |
+| Variable                                                        | Módulo                     | Obligatoria              |
+| --------------------------------------------------------------- | -------------------------- | ------------------------ |
+| `DB_USER`, `DB_PASSWORD`, `DB_NAME`, `INSTANCE_CONNECTION_NAME` | database_darp4.session     | Sí                       |
+| `REDIS_HOST`, `REDIS_PORT`, `REDIS_DB`, `REDIS_PREFIX`          | database_darp4.redis       | No (hay defaults)        |
+| `ENVIRONMENT`                                                   | session, signed_url, cloud_tasks | No (`local`)       |
+| `BUCKET_NAME`, `TARGET_SA`                                      | signed_url                 | No (hay defaults)        |
+| `SMTP_SERVER`, `SMTP_PORT`, `EMAIL_USER`, `EMAIL_PASS`          | send_email                 | Sí (para enviar correos) |
+| `GCP_PROJECT_ID`, `GCP_LOCATION`, `GCP_SERVICE_ACCOUNT_EMAIL`   | cloud_tasks                | No (hay defaults)        |
+| `NOTIFICATION_SERVICE_URL`, `NOTIFICATION_QUEUE_NAME`           | notifications_darp4        | Sí / No (hay default)    |
 
 
 Usa un archivo `.env` en la raíz del proyecto y `python-dotenv` para cargarlas.
@@ -308,7 +465,9 @@ Todas las dependencias están declaradas en `pyproject.toml` y se instalan autom
 | `redis`                | >=5.0.0                   | database_darp4.redis                |
 | `python-dotenv`        | >=1.0.0                   | database_darp4.session, email_darp4 |
 | `google-cloud-storage` | >=2.0.0                   | gcp_darp4.google_storage            |
+| `google-cloud-tasks`   | >=2.0.0                   | gcp_darp4.cloud_tasks               |
 | `google-auth`          | >=2.0.0                   | gcp_darp4.google_storage            |
+| `httpx`                | >=0.27.0                  | gcp_darp4.cloud_tasks (fallback local) |
 
 
 ---
