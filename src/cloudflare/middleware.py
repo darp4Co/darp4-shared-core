@@ -3,7 +3,7 @@ from fastapi.responses import JSONResponse
 import os
 
 
-CF_SECRET = os.getenv("CLOUDFLARE_SECRET_KEY")
+CF_SECRET = os.getenv("CLOUDFLARE_SECRET_KEY", "")
 
 async def verify_cloudflare_origin(request: Request, call_next):
     # 1. Allow local traffic so you can continue testing on your own machine
