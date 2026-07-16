@@ -19,7 +19,7 @@ class CloudflareOriginMiddleware(BaseHTTPMiddleware):
             return await call_next(request)
 
         # EXCEPCIÓN: Permitir lectura libre de las llaves públicas (OIDC Estándar)
-        if request.url.path.startswith("/.well-known/"):
+        if "/.well-known/jwks.json" in request.url.path:
             return await call_next(request)
         
         # Check for the Cloudflare secret stamp
