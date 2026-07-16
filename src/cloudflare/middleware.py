@@ -19,7 +19,7 @@ class CloudflareOriginMiddleware(BaseHTTPMiddleware):
             return await call_next(request)
         
         # 2. Check for the Cloudflare secret stamp
-        incoming_secret = request.headers.get("X-CF-Secret-Key")
+        incoming_secret = request.headers.get("X-Darp4-CF-Key")
         
         if incoming_secret != CF_SECRET:
             # Reject direct attacks hitting the Google Cloud Run URL immediately
