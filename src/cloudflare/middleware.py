@@ -14,6 +14,7 @@ class CloudflareOriginMiddleware(BaseHTTPMiddleware):
     """
 
     async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
+        print("CloudflareMiddleware -> Path: ", request.url.path)
         # Allow local traffic so you can continue testing on your own machine
         if request.client.host == "127.0.0.1" or request.url.hostname in ["localhost", "127.0.0.1"]:
             return await call_next(request)
