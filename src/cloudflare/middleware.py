@@ -14,11 +14,15 @@ class CloudflareOriginMiddleware(BaseHTTPMiddleware):
     """
 
     async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
-        # 1. Allow local traffic so you can continue testing on your own machine
+        # Allow local traffic so you can continue testing on your own machine
         if request.client.host == "127.0.0.1" or request.url.hostname in ["localhost", "127.0.0.1"]:
             return await call_next(request)
+
+        # EXCEPCIÓN: Permitir lectura libre de las llaves públicas (OIDC Estándar)
+        if request.url.path.startswith("/.well-known/"):
+            return await call_next(request)
         
-        # 2. Check for the Cloudflare secret stamp
+        # Check for the Cloudflare secret stamp
         incoming_secret = request.headers.get("X-Darp4-CF-Key")
         
         if incoming_secret != CF_SECRET:
