@@ -1,6 +1,11 @@
 from pydantic import BaseModel
 from datetime import datetime
 
+
+class RoleSessionSchema(BaseModel):
+    id: int
+    name: str
+
 class SessionSchema(BaseModel):
     """Esquema de datos que representa la información contenida en el payload de un token JWT después de ser validado.
         sub: Identificador del sujeto (usuario) al que pertenece el token.
@@ -24,9 +29,4 @@ class SessionSchema(BaseModel):
     exp: datetime
     jti: str
     role: RoleSessionSchema
-
-
-class RoleSessionSchema(BaseModel):
-    id: int
-    name: str
     
