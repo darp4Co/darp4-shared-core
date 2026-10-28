@@ -1,4 +1,4 @@
-def email_template(subject: str, body: str, to: str):
+def email_template(subject: str, body: str, to: str, logo_url: str):
     """
     Genera un template de email HTML para ser enviado por SMTP.
 
@@ -31,7 +31,7 @@ def email_template(subject: str, body: str, to: str):
                             <!-- Header -->
                             <tr>
                                 <td style="font-size:20px; font-weight:bold; padding-bottom:16px;">
-                                    <img src="https://storage.googleapis.com/darp4-storage/branding/logo-dark-2.png" alt="Darp4" />
+                                    <img src="{logo_url}" alt="Darp4" />
                                 </td>
                             </tr>
 

@@ -11,7 +11,13 @@ load_dotenv()
 logger = logging.getLogger(__name__)
 
 
-async def send_email_smtp(from_email: str, to: str, subject: str, body: str, from_name: str | None = None, reply_to: str | None = None):
+async def send_email_smtp(
+    from_email: str, to: str, 
+    subject: str, body: str,
+    from_name: str | None = None,
+    reply_to: str | None = None,
+    logo_url: str = 'https://storage.googleapis.com/darp4-storage/branding/logo-dark-2.png'
+):
     """
     Envía un email utilizando SMTP.
 
@@ -22,6 +28,7 @@ async def send_email_smtp(from_email: str, to: str, subject: str, body: str, fro
         body: str -> Cuerpo del email.
         from_name: str | None -> Nombre de la persona que envía el email.
         reply_to: str | None -> Email de respuesta.
+        logo_url: str -> URL del logo de Darp4.
 
     #### Returns:
         None
@@ -34,7 +41,7 @@ async def send_email_smtp(from_email: str, to: str, subject: str, body: str, fro
     EMAIL_USER = os.getenv("EMAIL_USER")
     EMAIL_PASS = os.getenv("EMAIL_PASS")
 
-    html_body = email_template(subject, body, to)
+    html_body = email_template(subject, body, to, logo_url)
     msg = EmailMessage()
     msg.set_content("Si no deseas recibir más correos, visita: https://darp4.com/unsubscribe")
     msg.add_alternative(html_body, subtype='html')
